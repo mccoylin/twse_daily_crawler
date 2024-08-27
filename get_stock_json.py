@@ -5,7 +5,7 @@
 # 資料來源是「台灣證券交易所」的「每日收盤行情」，分類「全部」
 # https://www.twse.com.tw/zh/trading/historical/mi-index.html
 # 爬取格式為 JSON 格式，並解析資料後存成 csv 檔
-# 還沒找過濾掉權證、ETF等資料的方法。
+# 「證券代號」濾掉開頭為"0"的資料。
 
 
 import pandas as pd
@@ -108,7 +108,10 @@ def parse_stock_data(data):
         fields = filtered_tables[0]['fields']
         data_list = filtered_tables[0]['data']
 
-        # 清理 data_list 中的 HTML 標籤 '<p style= color:red>+</p>'
+        # 濾除「證券代號」開頭為 0 的行
+        data_list = [row for row in data_list if not row[0].startswith('0')]
+
+        # 清理 data_list 中的 HTML 標籤 '<p style= color:red>+</p>'，及數字中的逗號
         for row in data_list:
             for i in range(len(row)):
                 row[i] = clean_html_tags(row[i])
