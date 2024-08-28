@@ -6,6 +6,11 @@
 # https://www.twse.com.tw/zh/trading/historical/mi-index.html
 # 爬取格式為 JSON 格式，並解析資料後存成 csv 檔
 # 「證券代號」濾掉開頭為"0"的資料。
+#
+# 使用方式：
+# $ python3 get_stock_json.py
+# 或是可以指定日期範圍：
+# $ python3 get_stock_json.py -s 20240801 -e 20240831
 
 
 import pandas as pd
@@ -14,6 +19,7 @@ from datetime import datetime, timedelta
 import time
 import json
 import re
+import argparse
 
 
 def get_date_range(start_date=None, end_date=None):
@@ -146,10 +152,15 @@ def remove_commas(text):
 
 
 def main():
-    start_date = None  # 設定開始日期，若為 None 則取今天的日期
-    end_date = None  # 設定結束日期，若為 None 則取今天的日期
-    #start_date = '20240826' # 設定開始日期，若為 None 則取今天的日期
-    #end_date = '20240826'  # 設定結束日期，若為 None 則取今天的日期
+    # 使用 argparse 來處理命令行參數
+    parser = argparse.ArgumentParser(description='Fetch stock data from TWSE.')
+    parser.add_argument('-s', '--start_date', type=str, help='Start date in YYYYMMDD format', required=False)
+    parser.add_argument('-e', '--end_date', type=str, help='End date in YYYYMMDD format', required=False)
+    args = parser.parse_args()
+
+    start_date = args.start_date
+    end_date = args.end_date
+
     date_range = get_date_range(start_date, end_date)
     
     #all_data = []
