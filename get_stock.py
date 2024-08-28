@@ -13,6 +13,7 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 import time
+import argparse
 
 
 def get_date_range(start_date=None, end_date=None):
@@ -116,13 +117,24 @@ def save_raw_data_to_csv(output, date, file_name='stock_data_rawData.csv'):
 
 
 def main():
-    # 設定開始日期、結束日期，若為 None 則取今天的日期
-    #start_date = '20240826'
-    #end_date = '20240826'
-    start_date = None  
-    end_date = None  
+    ## 設定開始日期、結束日期，若為 None 則取今天的日期
+    ##start_date = '20240826'
+    ##end_date = '20240826'
+    #start_date = None  
+    #end_date = None  
+    #date_range = get_date_range(start_date, end_date)
+
+    # 使用 argparse 來處理命令行參數
+    parser = argparse.ArgumentParser(description='Fetch stock data from TWSE.')
+    parser.add_argument('-s', '--start_date', type=str, help='Start date in YYYYMMDD format', required=False)
+    parser.add_argument('-e', '--end_date', type=str, help='End date in YYYYMMDD format', required=False)
+    args = parser.parse_args()
+
+    start_date = args.start_date
+    end_date = args.end_date
+
     date_range = get_date_range(start_date, end_date)
-    
+
     #all_data = []
     for target_date in date_range:
         data = fetch_stock_data(target_date)
