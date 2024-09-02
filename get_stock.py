@@ -41,9 +41,17 @@ def fetch_stock_data(target_date):
     headers = { 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0' }
     # windows headers
     #headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0' }
-    res = requests.get(url, headers=headers)
-    return res.text
-    #return res.json()
+    try:
+        res = requests.get(url, headers=headers, timeout=10)        # 設定 timeout 10 秒
+        res.raise_for_status()      # 如果狀態碼不是 200，就丟出異常
+        print(f"Response status code: {res.status_code}")
+        print(f"Response Content: {res.text[:100]}")
+        return res.text
+        #return res.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
 
 
 def parse_stock_data(data):
