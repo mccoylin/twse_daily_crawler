@@ -154,11 +154,14 @@ def main():
         output = parse_stock_data(data)
         #all_data.extend(output[1:])  # 合併所有日期的資料
     
-        if output:
-            save_to_csv(output, target_date)  # 保存每個日期的資料
-            save_raw_data_to_csv(data, target_date)
+        if not output:      # 如果 output 是空的，就跳過這個日期
+            print(f"{target_date} 沒資料.")
+            continue
 
-            print(f"Save data of {target_date} to csv file.")
+        save_to_csv(output, target_date)  # 保存每個日期的資料
+        save_raw_data_to_csv(data, target_date)
+
+        print(f"Save data of {target_date} to csv file.")
 
         time.sleep(5)  # 每次抓取資料後休息 5 秒 (避免被擋)
 
