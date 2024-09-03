@@ -99,29 +99,38 @@ def parse_stock_data(data):
 
       {}
     ]
+    
+
+    如果選中的日期沒有資料，則 
+    data = {'stat': '很抱歉，沒有符合條件的資料!'}
+
     """
+
     """篩選出 title 包含 '每日收盤行情' 的項目"""
     filtered_tables = []
     fields = []
     data_list = []
+
+    # 如果選中的日期沒有資料, 傳回空的 fields 和 data_list
+    if 'stat' in data and data['stat'] == '很抱歉，沒有符合條件的資料!': 
+        return fields, data_list
 
     filtered_tables = [
         table for table in data['tables'] 
         if '每日收盤行情' in table.get('title', '')
     ]
 
-    if filtered_tables:
-        fields = filtered_tables[0]['fields']
-        data_list = filtered_tables[0]['data']
+    fields = filtered_tables[0]['fields']
+    data_list = filtered_tables[0]['data']
 
-        # 濾除「證券代號」開頭為 0 的行
-        data_list = [row for row in data_list if not row[0].startswith('0')]
+    # 濾除「證券代號」開頭為 0 的行
+    data_list = [row for row in data_list if not row[0].startswith('0')]
 
-        # 清理 data_list 中的 HTML 標籤 '<p style= color:red>+</p>'，及數字中的逗號
-        for row in data_list:
-            for i in range(len(row)):
-                row[i] = clean_html_tags(row[i])
-                row[i] = remove_commas(row[i])
+    # 清理 data_list 中的 HTML 標籤 '<p style= color:red>+</p>'，及數字中的逗號
+    for row in data_list:
+        for i in range(len(row)):
+            row[i] = clean_html_tags(row[i])
+            row[i] = remove_commas(row[i])
 
     return fields, data_list
 
@@ -168,11 +177,14 @@ def main():
         data = fetch_stock_data(target_date)
         fields, data_list = parse_stock_data(data)
     
-        if data_list:
-            save_to_csv( data_list, fields, target_date)  # 保存每個日期的資料
-            save_raw_data_to_json(data, target_date)
+        if not data_list and not fields:      # 如果 output 是空的，就跳過這個日期
+            print(f"{target_date} 沒資料.")
+            continue
 
-            print(f"Save data of {target_date} to csv file.")
+        save_to_csv( data_list, fields, target_date)  # 保存每個日期的資料
+        save_raw_data_to_json(data, target_date)
+
+        print(f"Save data of {target_date} to csv file.")
 
         time.sleep(5)  # 每次抓取資料後休息 5 秒 (避免被擋)
 
