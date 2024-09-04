@@ -8,6 +8,9 @@ https://www.twse.com.tw/zh/trading/historical/mi-index.html <BR>
 https://www.peteryangblog.com/posts/python-data-collecting-stock-price <BR>
 
 使用方式：<BR>
-$ python3 get_stock_json.py <BR>
-或是可以指定日期範圍： <BR>
-$ python3 get_stock_json.py -s 20240801 -e 20240831 <BR>
+```
+$ python3 get_stock_json.py 
+
+或是可以指定日期範圍： 
+$ python3 get_stock_json.py -s 20240801 -e 20240831 
+```
