@@ -1,0 +1,132 @@
+
+好的，讓我們使用 Django 來構建一個股票網站。以下是基本步驟：
+
+1. 安裝 Django
+$ pip install django
+
+
+2. 創建 Django 專案
+$ django-admin startproject stock_site
+$ cd stock_site
+
+3. 創建 Django 應用
+創建一個新的應用來處理股票數據：
+$ python manage.py startapp stocks
+
+4. 設置應用
+在 stock_site/settings.py 中，將 stocks 添加到 INSTALLED_APPS 列表中：
+
+INSTALLED_APPS = [
+	...
+	'stocks',
+]
+
+5. 創建模型
+在 stocks/models.py 中創建一個模型來存儲股票數據：
+
+from django.db import models
+
+class StockData(models.Model):
+	date = models.CharField(max_length=8)
+	data = models.TextField()
+
+	def __str__(self):
+		return self.date
+
+
+6.  創建表單
+在 stocks/forms.py 中創建一個表單來輸入日期：
+
+from django import forms
+
+class DateForm(forms.Form):
+	date = forms.CharField(label='輸入日期 (格式: YYYYMMDD)', max_length=8)
+
+
+7. 創建視圖
+在 stocks/views.py 中創建視圖來處理表單提交和數據抓取：
+
+from django.shortcuts import render
+from .forms import DateForm
+from .models import StockData
+import requests
+
+def fetch_stock_data(target_date):
+	url = f'https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date={target_date}&type=ALL&response=csv'
+	headers = { 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0' }
+	
+	try:
+		res = requests.get(url, headers=headers, timeout=10)
+		res.raise_for_status()
+		return res.text
+	except requests.exceptions.RequestException as e:
+		return f"Request failed: {e}"
+
+def index(request):
+	if request.method == 'POST':
+		form = DateForm(request.POST)
+		if form.is_valid():
+			date = form.cleaned_data['date']
+			stock_data = fetch_stock_data(date)
+			StockData.objects.create(date=date, data=stock_data)
+			return render(request, 'stocks/index.html', {'form': form, 'stock_data': stock_data})
+	else:
+		form = DateForm()
+	return render(request, 'stocks/index.html', {'form': form})
+
+
+
+8. 設置 URL
+在 stocks/urls.py 中設置 URL 路由：
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+	path('', views.index, name='index'),
+]
+
+from django.contrib import admin
+from django.urls import include, path
+
+urlpatterns = [
+	path('admin/', admin.site.urls),
+	path('', include('stocks.urls')),
+]
+
+
+
+9. 創建模板
+在 stocks/templates/stocks/index.html 中創建一個模板來顯示股票數據：
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+	<meta charset="UTF-8">
+	<title>股票資料查詢</title>
+</head>
+<body>
+	<h1>股票資料查詢</h1>
+	<form method="post">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<button type="submit">查詢</button>
+	</form>
+	<div id="result">
+		{% if stock_data %}
+			<h2>查詢結果:</h2>
+			<pre>{{ stock_data }}</pre>
+		{% endif %}
+	</div>
+</body>
+</html>
+
+10. 運行 Django 服務器
+在命令行中運行以下命令來啟動 Django 服務器：
+$ python manage.py migrate
+$ python manage.py runserver
+
+
+11. 訪問網站
+打開瀏覽器並訪問 http://127.0.0.1:8000/，你應該會看到一個簡單的表單，允許你輸入日期並查詢股票資料。
+這是一個基本的範例，你可以根據需要進一步擴展和美化你的網站。
