@@ -23,6 +23,7 @@ import mysql.connector
 # URL 是採用 base_url + page_url 的方式組合而成。
 # 這個函數會返回一個 list, list 中包含了股票的代號和名稱。
 def get_stock_names(page_url: str) -> list:
+    # {
     base_url = "https://fubon-ebrokerdj.fbs.com.tw/z/zh/zhc/zhc.djhtm"
     url = f"{base_url}?a={page_url}"
     print(f"正在訪問網頁：{url}")
@@ -55,6 +56,7 @@ def get_stock_names(page_url: str) -> list:
     ## 提取並返回股票名稱
     stock_names = []
     for element in stock_elements:
+        # {
         # 提取文本並去除可能的前後空白
 
         #print (element.text)
@@ -79,12 +81,15 @@ def get_stock_names(page_url: str) -> list:
         stock_names.append((code, name))
 
         #print (stock_name)
+        # }     # end of for element in stock_elements
 
     return stock_names
+    # }     # end of get_stock_names
 
 
 # 組合出正確的 URL, 並抓取網頁內容。寫入 data table 中。
 def get_stock_url(table_name = str, page=None):
+    # {
 
     # 幾次實驗後發現，富邦證券的網站會在一段時間後取不到資料，所以每次只取幾個產業。避免被伺服器拒絕。
     # 從富邦抄出來的表, 第一組 key 是大類，第二組後的 key 是開啟的網址參數，修改成 list。
@@ -129,6 +134,7 @@ def get_stock_url(table_name = str, page=None):
     # 建立寫入資料表的資料
     sql_insert = []
     for list in NewkindIDNameStr:
+        # {
         for key in list[1]:
             #print(key, list[1][key])
         
@@ -147,6 +153,7 @@ def get_stock_url(table_name = str, page=None):
                 sql_insert.append( [code, name, list[0], list[1][key]] )    # "序號"會自動增加，不用寫入
 
             time.sleep(5)
+        # }     # for list in NewkindIDNameStr:
 
     # 將資料存入資料庫，"序號"會自動增加，不用寫入
     add_to_sql = f"insert into {table_name} ( `證券代號`, `證券名稱`, `産業別`, `細産業` ) values (%s, %s, %s, %s)"   
@@ -157,9 +164,12 @@ def get_stock_url(table_name = str, page=None):
     cursor.close()
     conn.commit()
 
+    # }     # end of get_stock_url
+
 
 # 建立 mysql 資料表，試著在欄位部份使用中文
 def create_industrial_table(table_name: str): 
+    # {
     sql = f"""CREATE TABLE `{table_name}`(
         序號 int NOT NULL AUTO_INCREMENT comment '序號',
         證券代號 varchar(10) NOT NULL comment '證券代號',
@@ -183,6 +193,7 @@ def create_industrial_table(table_name: str):
     cursor.close()
     print(f'已新增 {table_name}！')
     conn.close()
+    # }     # End of create_industrial_table
     
 
 
@@ -190,6 +201,7 @@ def create_industrial_table(table_name: str):
 # 原來找到的語法可能因為模組實作的問題而無法使用，
 # 所以 w3cschool 才會提供用 show tables 來找
 def search_table_exist(table_name: str) -> bool:
+    # {
     conn = get_mysql_connection()
     cursor = conn.cursor()
     sql = "SHOW TABLES;"
@@ -210,11 +222,13 @@ def search_table_exist(table_name: str) -> bool:
     
     print(f"找到 {table_name}")
     return True
+    # }     # end of search_table_exist
 
 
 
 # Connect to the database
 def get_mysql_connection():
+    # {
     # 依照自己的設定修改
 	return mysql.connector.connect(
 		host="127.0.0.1",
@@ -224,6 +238,7 @@ def get_mysql_connection():
         db="twse_stock",
 		charset="utf8mb4"
 	)
+    # }     # end of get_mysql_connection
 
 
 if __name__ == '__main__':
